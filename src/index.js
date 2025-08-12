@@ -15,6 +15,7 @@ import statusRouter from './routes/status.js';
 import healthRouter from './routes/health.js';
 import apiSeason3DataRouter from './routes/apiSeason3Data.js';
 import apiSeason3SignupRouter from './routes/apiSeason3Signup.js';
+import guildRaidProgressRouter from './routes/guildRaidProgress.js';
 import { startCron } from './cron.js';
 
 import dotenv from 'dotenv';
@@ -49,6 +50,7 @@ app.use('/status', statusRouter);
 app.use('/health', healthRouter);
 app.use('/api/season3/data', apiSeason3DataRouter);
 app.use('/api/season3/signup', apiSeason3SignupRouter);
+app.use('/guild-progress', guildRaidProgressRouter);
 
 // WebSocket connection handling
 io.on('connection', (socket) => {

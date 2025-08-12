@@ -12,6 +12,8 @@ const DB_NAME = process.env.DATABASE_NAME;
 const SEASON_SIGN_UP = process.env.SIGNUP_COLLECTION;
 // Collection name for members data
 const MEMBERS_COLLECTION_NAME = process.env.MEMBERS_COLLECTION_NAME;
+// Collection name for raid progress data
+const RAID_PROGRESS_COLLECTION = 'raid_progress';
 
 // Declare singleton variables for MongoDB connection
 let client;
@@ -453,6 +455,148 @@ process.on('SIGINT', async () => {
   await closeDatabase();
   process.exit(0);
 });
+
+// ===== RAID PROGRESS COLLECTION FUNCTIONS =====
+
+/**
+ * Get the MongoDB collection for raid progress.
+ * @returns {Promise<Collection>} The raid progress collection
+ */
+async function getRaidProgressCollection() {
+  const connection = await connectToDatabase();
+  if (!connection || !connection.db) {
+    throw new Error('Database connection failed');
+  }
+  return connection.db.collection(RAID_PROGRESS_COLLECTION);
+}
+
+/**
+ * Save guild raid progress data for a specific season.
+ * @param {string} seasonId - Season identifier
+ * @param {Object} progressData - Guild progress data to save
+ * @returns {Promise<Object>} MongoDB upsert result
+ */
+export async function saveSeasonRaidProgress(seasonId, progressData) {
+  try {
+    const raidProgressCollection = await getRaidProgressCollection();
+    
+    const document = {
+      seasonId,
+      seasonName: progressData.season?.name || seasonId,
+      lastUpdated: new Date(),
+      totalMembers: progressData.totalMembers || 0,
+      raids: progressData.raids || [],
+      metadata: {
+        generatedAt: new Date(),
+        memberCount: progressData.totalMembers || 0,
+        processedRaids: progressData.raids?.length || 0
+      }
+    };
+    
+    const result = await raidProgressCollection.updateOne(
+      { seasonId: seasonId },
+      { $set: document },
+      { upsert: true }
+    );
+    
+    console.log(`✅ Saved raid progress for season ${seasonId}`);
+    return result;
+  } catch (error) {
+    console.error(`❌ Failed to save raid progress for season ${seasonId}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Get guild raid progress data for a specific season from database.
+ * @param {string} seasonId - Season identifier
+ * @returns {Promise<Object|null>} Saved progress data or null if not found
+ */
+export async function getSeasonRaidProgress(seasonId) {
+  try {
+    const raidProgressCollection = await getRaidProgressCollection();
+    
+    const result = await raidProgressCollection.findOne({ seasonId });
+    return result;
+  } catch (error) {
+    console.error(`❌ Failed to get raid progress for season ${seasonId}:`, error);
+    return null;
+  }
+}
+
+/**
+ * Get all saved guild raid progress data.
+ * @returns {Promise<Object[]>} Array of all season progress documents
+ */
+export async function getAllSeasonRaidProgress() {
+  try {
+    const raidProgressCollection = await getRaidProgressCollection();
+    
+    const results = await raidProgressCollection
+      .find({})
+      .sort({ 'season.startDate': -1 }) // Most recent seasons first
+      .toArray();
+      
+    return results;
+  } catch (error) {
+    console.error('❌ Failed to get all season raid progress:', error);
+    return [];
+  }
+}
+
+/**
+ * Delete raid progress data for a specific season.
+ * @param {string} seasonId - Season identifier
+ * @returns {Promise<Object>} MongoDB delete result
+ */
+export async function deleteSeasonRaidProgress(seasonId) {
+  try {
+    const raidProgressCollection = await getRaidProgressCollection();
+    
+    const result = await raidProgressCollection.deleteOne({ seasonId });
+    
+    console.log(`✅ Deleted raid progress for season ${seasonId}`);
+    return result;
+  } catch (error) {
+    console.error(`❌ Failed to delete raid progress for season ${seasonId}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Check if raid progress data exists for a season.
+ * @param {string} seasonId - Season identifier
+ * @returns {Promise<boolean>} True if data exists
+ */
+export async function hasSeasonRaidProgress(seasonId) {
+  try {
+    const raidProgressCollection = await getRaidProgressCollection();
+    
+    const count = await raidProgressCollection.countDocuments({ seasonId });
+    return count > 0;
+  } catch (error) {
+    console.error(`❌ Failed to check raid progress for season ${seasonId}:`, error);
+    return false;
+  }
+}
+
+/**
+ * Get the most recently updated raid progress data.
+ * @returns {Promise<Object|null>} Most recent progress document or null
+ */
+export async function getLatestRaidProgress() {
+  try {
+    const raidProgressCollection = await getRaidProgressCollection();
+    
+    const result = await raidProgressCollection
+      .findOne({}, { sort: { lastUpdated: -1 } });
+      
+    return result;
+  } catch (error) {
+    console.error('❌ Failed to get latest raid progress:', error);
+    return null;
+  }
+}
 
 // Graceful shutdown handler for SIGTERM (kill signal)
 process.on('SIGTERM', async () => {

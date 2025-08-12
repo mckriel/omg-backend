@@ -15,7 +15,8 @@ import {
   findMemberByName, 
   updateMember, 
   addMember, 
-  removeInactiveMembers 
+  removeInactiveMembers,
+  saveSeasonRaidProgress
 } from '../../src/database.js';
 
 // Convert exec to promise-based
@@ -29,6 +30,9 @@ import {
   isTierItem,
   isPersonLocked
 } from './utils.mjs'
+
+// Import raid progress services - need to handle ES modules properly
+let raidProgressService = null;
 
 // Replace the config import section with:
 const __filename = fileURLToPath(import.meta.url);
@@ -90,7 +94,7 @@ function emitProgress(io, processId, type, data) {
  * @returns {boolean} True if character is active in Season 2
  */
 function isActiveInSeason2(character) {
-    const season2Start = new Date('2025-03-05').getTime();
+    const season2Start = new Date('2025-01-07').getTime();
     const lastModified = new Date(character.metaData.lastUpdated).getTime();
     return lastModified >= season2Start;
 }
@@ -267,9 +271,14 @@ export const startGuildUpdate = async (dataTypes = ['raid', 'mplus', 'pvp'], pro
 
                     if (dataTypes.includes('raid')) {
                         const raidResponse = await BnetApi.query(raidProgressUrl);
-                        dataToAppend.raidHistory = raidResponse.expansions.find(item => 
-                            item.expansion.name === 'Current Season'
-                        ) || {};
+                        
+                        // Store all expansion data for comprehensive tracking
+                        dataToAppend.raidHistory = {
+                            currentSeason: raidResponse.expansions.find(item => 
+                                item.expansion.name === 'Current Season'
+                            ) || {},
+                            allExpansions: raidResponse.expansions || []
+                        };
                     }
 
                     if (dataTypes.includes('mplus')) {
@@ -349,7 +358,7 @@ export const startGuildUpdate = async (dataTypes = ['raid', 'mplus', 'pvp'], pro
 
             // Check raid lockouts
             const lockStatus = dataTypes.includes('raid') ? 
-                        checkRaidLockouts(dataToAppend.raidHistory) : 
+                        checkRaidLockouts(dataToAppend.raidHistory?.currentSeason) : 
                 null;
 
             const character = { 
@@ -436,13 +445,50 @@ export const startGuildUpdate = async (dataTypes = ['raid', 'mplus', 'pvp'], pro
             });
         }
 
+        // Calculate and save raid progress for all seasons
+        emitProgress(io, processId, 'raid-progress', {
+            message: 'Calculating guild raid progress...'
+        });
+        
+        try {
+            // Dynamically import the raid progress service to avoid circular dependencies
+            if (!raidProgressService) {
+                raidProgressService = await import('../../src/services/guildRaidProgress.js');
+            }
+            
+            // Calculate and save progress for all seasons
+            const allSeasonsProgress = await raidProgressService.getGuildRaidProgressAllSeasons();
+            
+            // Save each season's progress to MongoDB
+            for (const [seasonId, seasonData] of Object.entries(allSeasonsProgress.seasons)) {
+                await saveSeasonRaidProgress(seasonId, seasonData);
+                emitProgress(io, processId, 'raid-progress', {
+                    message: `Saved raid progress for ${seasonData.name}`
+                });
+            }
+            
+            emitProgress(io, processId, 'raid-progress', {
+                message: 'Guild raid progress calculation completed',
+                success: true,
+                seasonsProcessed: Object.keys(allSeasonsProgress.seasons).length
+            });
+        } catch (raidError) {
+            emitProgress(io, processId, 'error', {
+                message: 'Failed to calculate raid progress',
+                error: raidError.message
+            });
+            console.error('❌ Raid progress calculation failed:', raidError);
+            // Don't fail the entire update process for raid progress errors
+        }
+
         emitProgress(io, processId, 'complete', {
             message: 'Guild data update completed successfully!',
             success: true,
             statistics: {
                 totalMembers: updatedMemberNames.length,
                 updatedMembers: updatedMemberNames.length,
-                dataTypes
+                dataTypes,
+                raidProgressUpdated: true
             }
         });
         
