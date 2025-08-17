@@ -37,7 +37,19 @@ const data = {
         "Social"
     ],
     "SEASON3_TIER_SETS": [
-        "Manaforge Omega"
+        "Deathbringer", "Rider of the Apocalypse", "San'layn",
+        "Aldrachi Reaver", "Fel-Scarred", 
+        "Druid of the Claw", "Elune's Chosen", "Keeper of the Grove", "Wildstalker",
+        "Chronowarden", "Flameshaper", "Scalecommander",
+        "Dark Ranger", "Pack Leader", "Sentinel",
+        "Frostfire", "Spellslinger", "Sunfury",
+        "Conduit of the Celestials", "Master of Harmony", "Shado-Pan",
+        "Herald of the Sun", "Lightsmith", "Templar",
+        "Archon", "Oracle", "Voidweaver",
+        "Deathstalker", "Fatebound", "Trickster",
+        "Farseer", "Stormbringer", "Totemic",
+        "Diabolist", "Hellcaller", "Soul Harvester",
+        "Colossus", "Mountain Thane", "Slayer"
     ]
 }
 
