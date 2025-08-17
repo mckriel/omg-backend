@@ -45,8 +45,10 @@ router.get('/', async (req, res) => {
       };
 
       if (member.equipement) {
-        // Filter for jewelry items (rings and neck)
-        const jewelryItems = member.equipement.filter(item => item.isJewelry);
+        // Filter for jewelry items (rings and neck) - fallback to slot type for older data
+        const jewelryItems = member.equipement.filter(item => 
+          item.isJewelry || ['NECK', 'FINGER_1', 'FINGER_2'].includes(item.type)
+        );
         
         jewelryItems.forEach(item => {
           const jewelryPiece = {
