@@ -119,17 +119,23 @@ function checkRaidLockouts(raidData) {
     lastWednesday.setDate(today.getDate() - ((today.getDay() + 4) % 7));
     lastWednesday.setHours(0, 0, 0, 0);
 
+    console.log("Checking raid lockouts with CURRENT_RAID:", CURRENT_RAID);
+    
     if (!raidData?.instances) {
         console.log("No instances found in raidData");
+        console.log("Available raidData keys:", Object.keys(raidData || {}));
         return lockouts;
     }
 
+    console.log("Available raid instances:", raidData.instances.map(i => i.instance?.name));
+    
     const currentRaid = raidData.instances.find(instance => 
         instance.instance?.name === CURRENT_RAID
     );
 
     if (!currentRaid) {
-        console.log("Current raid not found", raidData.instances.map(i => i.instance?.name));
+        console.log("Current raid not found. Looking for:", CURRENT_RAID);
+        console.log("Available raids:", raidData.instances.map(i => i.instance?.name));
         return lockouts;
     }
 
@@ -384,9 +390,12 @@ export const startGuildUpdate = async (dataTypes = ['raid', 'mplus', 'pvp'], pro
             });
 
             // Check raid lockouts
-            const lockStatus = dataTypes.includes('raid') ? 
-                        checkRaidLockouts(dataToAppend.raidHistory?.currentSeason) : 
-                null;
+            let lockStatus = null;
+            if (dataTypes.includes('raid') && dataToAppend.raidHistory?.currentSeason) {
+                console.log(`Checking lockouts for ${characterName}-${server}`);
+                console.log("Raid data structure:", JSON.stringify(dataToAppend.raidHistory.currentSeason, null, 2));
+                lockStatus = checkRaidLockouts(dataToAppend.raidHistory.currentSeason);
+            }
 
             const character = { 
                         ...dataToAppend, 
