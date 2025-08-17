@@ -15,12 +15,9 @@ function transformCharacterData(character) {
 
   let season3Set = 0;
   character.equipement?.forEach((item) => {
-    if (item.isTierItem && item.level >= MIN_TIER_ITEMLEVEL) {
-      const setName = item._raw?.set?.item_set?.name || "";
-      const isSeason3 = SEASON3_TIER_SETS.some(tierSetName => setName.includes(tierSetName));
-      if (isSeason3) {
-        season3Set = season3Set + 1;
-      }
+    if (item.isTierItem && item.level >= 668 && item.level <= 723) {
+      // Season 3 tier pieces are item level 668-723 (LFR to Mythic)
+      season3Set = season3Set + 1;
     }
   });
 
@@ -30,11 +27,12 @@ function transformCharacterData(character) {
       item.name?.toLowerCase() === "durable information securing container"
   ) || false;
 
-  const hasQualifyingCloak = character.equipement?.some(
-    (item) =>
-      (item.type === 'CLOAK' || item.type === 'BACK') &&
-      item.name?.toLowerCase() === "reshii wraps"
-  ) || false;
+  const cloakItem = character.equipement?.find(
+    (item) => item.type === 'CLOAK' || item.type === 'BACK'
+  );
+  
+  const hasQualifyingCloak = cloakItem?.name?.toLowerCase() === "reshii wraps" || false;
+  const cloakItemLevel = cloakItem?.level || 0;
 
   const isTank = TANKS.includes(character.metaData?.spec);
   const isHealer = HEALERS.includes(character.metaData?.spec);
@@ -77,6 +75,7 @@ function transformCharacterData(character) {
     missingEnchantsCount: missingEnchants.length,
     missingWaist: !hasQualifyingWaist,
     missingCloak: !hasQualifyingCloak,
+    cloakItemLevel: cloakItemLevel,
     tierSets: {
       season3: season3Set,
       total: season3Set
