@@ -107,7 +107,7 @@ function isActiveInSeason3(character) {
  * @returns {Object} Lockout status for each difficulty
  */
 function checkRaidLockouts(raidData) {
-    const CURRENT_RAID = "Liberation of Undermine";
+    const CURRENT_RAID = "Manaforge Omega";
     const lockouts = {
         isLocked: false,
         lockedTo: {}
