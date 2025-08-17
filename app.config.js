@@ -17,7 +17,7 @@ const data = {
     "MIN_CHECK_CAP": 640,
     "MAX_CHECK_CAP": 800,
     "MIN_TIER_ITEMLEVEL": 640,
-    "ENCHANTABLE_PIECES": ["HEAD", "BACK", "WRIST", "LEGS", "FEET", "CHEST", "MAIN_HAND", "FINGER_1", "FINGER_2"],
+    "ENCHANTABLE_PIECES": ["BACK", "WRIST", "LEGS", "FEET", "CHEST", "MAIN_HAND", "FINGER_1", "FINGER_2"],
     "MAIN_RANKS": [0,1,2,3,4,5,6,7],
     "ALT_RANKS": [8,9,10],
     "TANKS": ["Blood", "Vengeance", "Guardian", "Brewmaster", "Protection"],
