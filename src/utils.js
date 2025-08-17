@@ -91,6 +91,7 @@ function transformCharacterData(character) {
     guildRank: guildRank,
     ready: character.ready,
     missingEnchants,
+    missingEnchantsCount: missingEnchants.length,
     missingWaist: !hasQualifyingWaist,
     missingCloak: !hasQualifyingCloak,
     tierSets: {
