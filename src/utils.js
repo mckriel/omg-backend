@@ -1,7 +1,7 @@
 import config from '../app.config.js';
 
 const { TANKS, HEALERS, GUILLD_RANKS, MAIN_RANKS, ALT_RANKS, MIN_TIER_ITEMLEVEL } = config;
-const CURRENT_SEASON_TIER_SETS = config.CURRENT_SEASON_TIER_SETS;
+const SEASON3_TIER_SETS = config.SEASON3_TIER_SETS;
 
 /**
  * Transforms a character object into a standardized format for the API.
@@ -13,16 +13,13 @@ function transformCharacterData(character) {
     ?.filter(item => item.needsEnchant && !item.hasEnchant)
     ?.map(item => item.type) || [];
 
-  let oldSet = 0;
-  let newSet = 0;
+  let season3Set = 0;
   character.equipement?.forEach((item) => {
     if (item.isTierItem && item.level >= MIN_TIER_ITEMLEVEL) {
       const setName = item._raw?.set?.item_set?.name || "";
-      const isCurrentSeason = CURRENT_SEASON_TIER_SETS.some(tierSetName => setName.includes(tierSetName));
-      if (isCurrentSeason) {
-        newSet = newSet + 1;
-      } else {
-        oldSet = oldSet + 1;
+      const isSeason3 = SEASON3_TIER_SETS.some(tierSetName => setName.includes(tierSetName));
+      if (isSeason3) {
+        season3Set = season3Set + 1;
       }
     }
   });
@@ -58,14 +55,13 @@ function transformCharacterData(character) {
     missingWaist: !hasQualifyingWaist,
     missingCloak: !hasQualifyingCloak,
     tierSets: {
-      season1: oldSet,
-      season2: newSet,
-      total: oldSet + newSet
+      season3: season3Set,
+      total: season3Set
     },
     mplus: character.mplus?.current_mythic_rating?.rating || 0,
     pvp: character.pvp?.rating || 0,
-    hasTierSet: (oldSet + newSet) >= 4,
-    isActiveInSeason2: character.isActiveInSeason2,
+    hasTierSet: season3Set >= 4,
+    isActiveInSeason3: character.isActiveInSeason3,
     lockStatus: character.lockStatus,
     media: character.media,
     metaData: {
@@ -172,9 +168,9 @@ function applyFilters(data, filters) {
         !character.ready
       );
       break;
-    case 'active-season2':
+    case 'active-season3':
       filteredData = filteredData.filter(character => 
-        character.isActiveInSeason2
+        character.isActiveInSeason3
       );
       break;
     case 'has-pvp-rating':

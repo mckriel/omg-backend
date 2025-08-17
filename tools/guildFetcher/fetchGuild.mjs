@@ -28,6 +28,8 @@ import {
   needsEnchant,
   hasEnchant,
   isTierItem,
+  getSocketInfo,
+  isJewelryItem,
   isPersonLocked
 } from './utils.mjs'
 
@@ -89,14 +91,14 @@ function emitProgress(io, processId, type, data) {
 }
 
 /**
- * Checks if a character has been active since Season 2 started
+ * Checks if a character has been active since Season 3 started
  * @param {Object} character Character data object
- * @returns {boolean} True if character is active in Season 2
+ * @returns {boolean} True if character is active in Season 3
  */
-function isActiveInSeason2(character) {
-    const season2Start = new Date('2025-01-07').getTime();
+function isActiveInSeason3(character) {
+    const season3Start = new Date('2025-08-12').getTime();
     const lastModified = new Date(character.metaData.lastUpdated).getTime();
-    return lastModified >= season2Start;
+    return lastModified >= season3Start;
 }
 
 /**
@@ -258,15 +260,40 @@ export const startGuildUpdate = async (dataTypes = ['raid', 'mplus', 'pvp'], pro
 
                     // Fetch equipment data
                     const equipResponse = await BnetApi.query(equipmentUrl);
-                    const armory = equipResponse.equipped_items.map(item => ({
-                        type: item.slot.type,
-                        name: item.name,
-                        needsEnchant: needsEnchant(ENCHANTABLE_PIECES, item),
-                        hasEnchant: hasEnchant(item),
-                        isTierItem: isTierItem(item),
-                        level: item.level.value,
-                        _raw: item
-                    }));
+                    const armory = equipResponse.equipped_items.map(item => {
+                        const socketInfo = getSocketInfo(item);
+                        const baseItem = {
+                            type: item.slot.type,
+                            name: item.name,
+                            needsEnchant: needsEnchant(ENCHANTABLE_PIECES, item),
+                            hasEnchant: hasEnchant(item),
+                            isTierItem: isTierItem(item),
+                            level: item.level.value,
+                            isJewelry: isJewelryItem(item),
+                            _raw: item
+                        };
+
+                        // Add socket information for all items
+                        if (socketInfo.hasSocket) {
+                            baseItem.sockets = {
+                                hasSocket: true,
+                                socketCount: socketInfo.socketCount,
+                                gemmedSockets: socketInfo.gemmedSockets,
+                                emptySocketCount: socketInfo.emptySocketCount,
+                                socketDetails: socketInfo.sockets
+                            };
+                        } else {
+                            baseItem.sockets = {
+                                hasSocket: false,
+                                socketCount: 0,
+                                gemmedSockets: 0,
+                                emptySocketCount: 0,
+                                socketDetails: []
+                            };
+                        }
+
+                        return baseItem;
+                    });
                     dataToAppend.equipement = armory;
 
                     if (dataTypes.includes('raid')) {
@@ -327,10 +354,10 @@ export const startGuildUpdate = async (dataTypes = ['raid', 'mplus', 'pvp'], pro
                         }
                     }
 
-            // Check Season 2 activity
-                    const isActive = isActiveInSeason2(dataToAppend);
+            // Check Season 3 activity
+                    const isActive = isActiveInSeason3(dataToAppend);
             
-            // Reset inactive character stats
+            // Reset inactive character stats (inactive since Season 3 start)
             if (!isActive) {
                         if (dataToAppend.mplus) {
                             dataToAppend.mplus.current_mythic_rating = { rating: 0 };
@@ -367,7 +394,7 @@ export const startGuildUpdate = async (dataTypes = ['raid', 'mplus', 'pvp'], pro
                 missingEnchants: missingEnchantCount,
                 hasTierSet,
                 lockStatus,
-                isActiveInSeason2: isActive,
+                isActiveInSeason3: isActive,
                 processedStats: {
                             mythicPlusScore: dataToAppend.mplus?.current_mythic_rating?.rating || 0,
                             pvpRating: dataToAppend.pvp?.rating || 0,

@@ -56,6 +56,42 @@ const isTierItem = (item) => {
 }
 
 //
+// Extracts socket information from an item
+const getSocketInfo = (item) => {
+    if (!item?.sockets?.length) {
+        return {
+            hasSocket: false,
+            socketCount: 0,
+            sockets: []
+        };
+    }
+
+    const sockets = item.sockets.map(socket => ({
+        socketType: socket.socket_type?.name || 'Unknown',
+        item: socket.item ? {
+            id: socket.item.id,
+            name: socket.item.name,
+            quality: socket.item.quality?.name || 'Unknown'
+        } : null
+    }));
+
+    return {
+        hasSocket: true,
+        socketCount: item.sockets.length,
+        sockets: sockets,
+        gemmedSockets: sockets.filter(s => s.item !== null).length,
+        emptySocketCount: sockets.filter(s => s.item === null).length
+    };
+}
+
+//
+// Check if an item is jewelry (rings or neck)
+const isJewelryItem = (item) => {
+    const jewelrySlots = ['NECK', 'FINGER_1', 'FINGER_2'];
+    return jewelrySlots.includes(item.slot?.type);
+}
+
+//
 // Updated for new compressed data format
 // Builds isLocked for the new lockStatus structure
 const isPersonLocked = (lockStatus) => {
@@ -185,6 +221,8 @@ export {
     needsEnchant,
     hasEnchant,
     isTierItem,
+    getSocketInfo,
+    isJewelryItem,
     generateLockedMetaData,
     buildInitialClassList,
     filterSearch,

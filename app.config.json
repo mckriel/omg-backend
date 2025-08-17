@@ -30,19 +30,7 @@
     "Alt",
     "New Recruit"
   ],
-  "CURRENT_SEASON_TIER_SETS": [
-    "Cauldron Champion's Encore",
-    "Roots of Reclaiming Blight",
-    "Fel-Dealer's Contraband",
-    "Opulent Treasurescale's Hoard",
-    "Tireless Collector's Bounties",
-    "Jewels of the Aspectral Emissary",
-    "Ageless Serpent's Foresight",
-    "Oath of the Aureate Sentry",
-    "Confessor's Unshakable Virtue",
-    "Spectral Gambler's Last Call",
-    "Currents of the Gale Sovereign",
-    "Spliced Fiendtrader's Influence",
-    "Underpin Strongarm's Muscle"
+  "SEASON3_TIER_SETS": [
+    "Manaforge Omega"
   ]
 }

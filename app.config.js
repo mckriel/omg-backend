@@ -25,31 +25,19 @@ const data = {
     "DIFFICULTY": ["Mythic", "Heroic", "Normal"],
     "_DRAFT_DIFFICULTY": ["LFR", "Raid Finder", "Mythic", "Heroic", "Normal"],
     "GUILLD_RANKS": [
-        "Guild Lead",
+        "Guild Master",
+        "Council Member",
         "Officer",
         "Officer Alt",
-        "Cunt",
-        "Muppet",
-        "Raider",
-        "Trial Raider",
-        "Member",
+        "Mythic Raider",
+        "Alt Raider",
+        "Raider Trial",
+        "Social Raider",
         "Alt",
-        "New Recruit"
+        "Social"
     ],
-    "CURRENT_SEASON_TIER_SETS": [
-        "Cauldron Champion's Encore",
-        "Roots of Reclaiming Blight",
-        "Fel-Dealer's Contraband",
-        "Opulent Treasurescale's Hoard",
-        "Tireless Collector's Bounties",
-        "Jewels of the Aspectral Emissary",
-        "Ageless Serpent's Foresight",
-        "Oath of the Aureate Sentry",
-        "Confessor's Unshakable Virtue",
-        "Spectral Gambler's Last Call",
-        "Currents of the Gale Sovereign",
-        "Spliced Fiendtrader's Influence",
-        "Underpin Strongarm's Muscle"
+    "SEASON3_TIER_SETS": [
+        "Manaforge Omega"
     ]
 }
 
