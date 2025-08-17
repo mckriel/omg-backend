@@ -538,3 +538,20 @@ export const startGuildUpdate = async (dataTypes = ['raid', 'mplus', 'pvp'], pro
 };
 
 export default startGuildUpdate;
+
+// Execute when run directly (not when imported)
+if (import.meta.url === `file://${process.argv[1]}`) {
+    console.log('🚀 Starting guild update process...\n');
+    
+    startGuildUpdate(['raid', 'mplus', 'pvp'], 'manual-run', null)
+        .then(() => {
+            console.log('\n✅ Guild update completed successfully!');
+            console.log('🔄 Check /data endpoint for updated information');
+            process.exit(0);
+        })
+        .catch((error) => {
+            console.error('\n❌ Guild update failed:', error.message);
+            console.error('Full error:', error);
+            process.exit(1);
+        });
+}
