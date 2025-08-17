@@ -40,41 +40,24 @@ function transformCharacterData(character) {
   const isHealer = HEALERS.includes(character.metaData?.spec);
   const role = isTank ? 'tank' : isHealer ? 'healer' : 'dps';
 
-  // Extract jewelry and socket information
-  const jewelry_data = {
-    items: [],
-    summary: {
-      total_jewelry_pieces: 0,
-      socketed_jewelry_pieces: 0,
-      total_sockets: 0,
-      gemmed_sockets: 0,
-      empty_sockets: 0
-    }
+  // Extract jewelry socket/gem summary information
+  const jewelry_summary = {
+    total_jewelry_pieces: 0,
+    socketed_jewelry_pieces: 0,
+    total_sockets: 0,
+    gemmed_sockets: 0,
+    empty_sockets: 0
   };
 
   character.equipement?.forEach((item) => {
-    if (item.isJewelry) {
-      const jewelry_piece = {
-        slot: item.type,
-        name: item.name,
-        level: item.level,
-        sockets: item.sockets || {
-          hasSocket: false,
-          socketCount: 0,
-          gemmedSockets: 0,
-          emptySocketCount: 0,
-          socketDetails: []
-        }
-      };
-
-      jewelry_data.items.push(jewelry_piece);
-      jewelry_data.summary.total_jewelry_pieces++;
+    if (item.isJewelry || ['NECK', 'FINGER_1', 'FINGER_2'].includes(item.type)) {
+      jewelry_summary.total_jewelry_pieces++;
 
       if (item.sockets?.hasSocket) {
-        jewelry_data.summary.socketed_jewelry_pieces++;
-        jewelry_data.summary.total_sockets += item.sockets.socketCount;
-        jewelry_data.summary.gemmed_sockets += item.sockets.gemmedSockets;
-        jewelry_data.summary.empty_sockets += item.sockets.emptySocketCount;
+        jewelry_summary.socketed_jewelry_pieces++;
+        jewelry_summary.total_sockets += item.sockets.socketCount;
+        jewelry_summary.gemmed_sockets += item.sockets.gemmedSockets;
+        jewelry_summary.empty_sockets += item.sockets.emptySocketCount;
       }
     }
   });
@@ -101,7 +84,7 @@ function transformCharacterData(character) {
     mplus: character.mplus?.current_mythic_rating?.rating || 0,
     pvp: character.pvp?.rating || 0,
     hasTierSet: season3Set >= 4,
-    jewelry: jewelry_data,
+    jewelry: jewelry_summary,
     isActiveInSeason3: character.isActiveInSeason3,
     lockStatus: character.lockStatus,
     media: character.media,

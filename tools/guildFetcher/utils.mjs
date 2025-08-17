@@ -40,6 +40,10 @@ const getCharacterInformation = (member, token) => {
 // Helps with getting specific nested data items
 // @TODO - Some pieces may have exceptions down the line, so we can add those here
 const needsEnchant = (ENCHANTABLE_PIECES, item) => {
+    // Handle BACK/CLOAK as the same slot type
+    if (item.slot.type === 'CLOAK') {
+        return ENCHANTABLE_PIECES.indexOf('BACK') > -1;
+    }
     return ENCHANTABLE_PIECES.indexOf(item.slot.type) > -1
 }
 
