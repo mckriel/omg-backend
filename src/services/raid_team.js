@@ -136,6 +136,14 @@ export async function process_guild_data(guild_members) {
 
     for (const character of guild_members) {
       try {
+        const min_ilvl = parseInt(process.env.RAID_TEAM_ILVL) || 690;
+        const character_ilvl = character.itemlevel?.equiped || 0;
+        
+        if (character_ilvl < min_ilvl) {
+          console.log(`⏭️  Skipping ${character.name}-${character.server}: ilvl ${character_ilvl} < ${min_ilvl}`);
+          continue;
+        }
+
         const raid_team_data = transform_character_for_raid_team(character);
         
         const result = await raid_team_member.updateOne(
