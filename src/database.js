@@ -14,6 +14,8 @@ const SEASON_SIGN_UP = process.env.SIGNUP_COLLECTION;
 const MEMBERS_COLLECTION_NAME = process.env.MEMBERS_COLLECTION_NAME;
 // Collection name for raid progress data
 const RAID_PROGRESS_COLLECTION = 'raid_progress';
+// Collection name for settings data
+const SETTINGS_COLLECTION = 'settings';
 
 // Declare singleton variables for MongoDB connection
 let client;
@@ -595,6 +597,155 @@ export async function getLatestRaidProgress() {
   } catch (error) {
     console.error('❌ Failed to get latest raid progress:', error);
     return null;
+  }
+}
+
+// ===== SETTINGS COLLECTION FUNCTIONS =====
+
+/**
+ * Get the MongoDB collection for settings.
+ * @returns {Promise<Collection>} The settings collection
+ */
+async function getSettingsCollection() {
+  const connection = await connectToDatabase();
+  if (!connection || !connection.db) {
+    throw new Error('Database connection failed');
+  }
+  return connection.db.collection(SETTINGS_COLLECTION);
+}
+
+/**
+ * Get a settings document by collection and document name.
+ * @param {string} collection_name - The settings collection name (e.g., 'raid-team')
+ * @param {string} document_name - The document name within the collection (e.g., 'general')
+ * @returns {Promise<Object|null>} The settings document or null if not found
+ */
+export async function getSettingsDocument(collection_name, document_name = 'general') {
+  try {
+    const settingsCollection = await getSettingsCollection();
+    
+    const document = await settingsCollection.findOne({
+      collection: collection_name,
+      document: document_name
+    });
+    
+    return document;
+  } catch (error) {
+    console.error(`❌ Failed to get settings document ${collection_name}:${document_name}:`, error);
+    return null;
+  }
+}
+
+/**
+ * Update or create a settings document.
+ * @param {string} collection_name - The settings collection name (e.g., 'raid-team')
+ * @param {string} document_name - The document name within the collection (e.g., 'general')
+ * @param {Object} settings_data - The settings data to save
+ * @returns {Promise<Object>} MongoDB upsert result
+ */
+export async function updateSettingsDocument(collection_name, document_name = 'general', settings_data) {
+  try {
+    const settingsCollection = await getSettingsCollection();
+    
+    const document = {
+      collection: collection_name,
+      document: document_name,
+      settings: settings_data,
+      lastUpdated: new Date(),
+      updatedAt: new Date()
+    };
+    
+    const result = await settingsCollection.updateOne(
+      { 
+        collection: collection_name,
+        document: document_name 
+      },
+      { 
+        $set: document,
+        $setOnInsert: { createdAt: new Date() }
+      },
+      { upsert: true }
+    );
+    
+    console.log(`✅ Updated settings document ${collection_name}:${document_name}`);
+    return result;
+  } catch (error) {
+    console.error(`❌ Failed to update settings document ${collection_name}:${document_name}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Initialize default settings if they don't exist.
+ * @returns {Promise<void>}
+ */
+export async function initializeDefaultSettings() {
+  try {
+    // Check if raid-team settings exist
+    const raidTeamSettings = await getSettingsDocument('raid-team');
+    
+    if (!raidTeamSettings) {
+      // Create default raid-team settings
+      await updateSettingsDocument('raid-team', 'general', {
+        'ilvl-requirement': 690
+      });
+      console.log('✅ Initialized default raid-team settings');
+    }
+    
+  } catch (error) {
+    console.error('❌ Failed to initialize default settings:', error);
+  }
+}
+
+/**
+ * Get a specific setting value from a document.
+ * @param {string} collection_name - The settings collection name
+ * @param {string} setting_key - The setting key to retrieve
+ * @param {string} document_name - The document name (optional, defaults to 'general')
+ * @returns {Promise<any>} The setting value or null if not found
+ */
+export async function getSettingValue(collection_name, setting_key, document_name = 'general') {
+  try {
+    const document = await getSettingsDocument(collection_name, document_name);
+    
+    if (!document || !document.settings) {
+      return null;
+    }
+    
+    return document.settings[setting_key] || null;
+  } catch (error) {
+    console.error(`❌ Failed to get setting value ${collection_name}:${setting_key}:`, error);
+    return null;
+  }
+}
+
+/**
+ * Update a specific setting value in a document.
+ * @param {string} collection_name - The settings collection name
+ * @param {string} setting_key - The setting key to update
+ * @param {any} value - The new value
+ * @param {string} document_name - The document name (optional, defaults to 'general')
+ * @returns {Promise<Object>} MongoDB update result
+ */
+export async function updateSettingValue(collection_name, setting_key, value, document_name = 'general') {
+  try {
+    // Get existing document first
+    const existing_document = await getSettingsDocument(collection_name, document_name);
+    
+    // Prepare updated settings
+    const updated_settings = {
+      ...(existing_document?.settings || {}),
+      [setting_key]: value
+    };
+    
+    // Update the document
+    const result = await updateSettingsDocument(collection_name, document_name, updated_settings);
+    
+    console.log(`✅ Updated setting ${collection_name}:${setting_key} to ${value}`);
+    return result;
+  } catch (error) {
+    console.error(`❌ Failed to update setting value ${collection_name}:${setting_key}:`, error);
+    throw error;
   }
 }
 

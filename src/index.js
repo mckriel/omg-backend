@@ -17,7 +17,9 @@ import healthRouter from './routes/health.js';
 import apiSeason3DataRouter from './routes/apiSeason3Data.js';
 import apiSeason3SignupRouter from './routes/apiSeason3Signup.js';
 import guildRaidProgressRouter from './routes/guildRaidProgress.js';
+import settingsRouter from './routes/settings.js';
 import { startCron } from './cron.js';
+import { initializeDefaultSettings } from './database.js';
 
 import dotenv from 'dotenv';
 dotenv.config();
@@ -53,6 +55,7 @@ app.use('/health', healthRouter);
 app.use('/api/season3/data', apiSeason3DataRouter);
 app.use('/api/season3/signup', apiSeason3SignupRouter);
 app.use('/guild-progress', guildRaidProgressRouter);
+app.use('/settings', settingsRouter);
 
 // WebSocket connection handling
 io.on('connection', (socket) => {
@@ -84,8 +87,16 @@ app.use((req, res) => {
 });
 
 // Start the server and log the port
-server.listen(port, host, () => {
+server.listen(port, host, async () => {
     console.log(`Server is running on http://${host}:${port}`);
+    
+    // Initialize default settings on startup
+    try {
+        await initializeDefaultSettings();
+        console.log('✅ Default settings initialized');
+    } catch (error) {
+        console.error('❌ Failed to initialize default settings:', error);
+    }
 });
 
 // Start the cron job for scheduled guild updates
