@@ -19,6 +19,8 @@ import {
   saveSeasonRaidProgress
 } from '../../src/database.js';
 
+import { process_guild_data } from '../../src/services/raid_team.js';
+
 // Convert exec to promise-based
 const execAsync = promisify(exec);
 
@@ -477,6 +479,32 @@ export const startGuildUpdate = async (dataTypes = ['raid', 'mplus', 'pvp'], pro
         } catch (error) {
             emitProgress(io, processId, 'error', {
                 message: 'Error removing inactive members',
+                error: error.message
+            });
+        }
+
+        // Process raid team data
+        emitProgress(io, processId, 'raid-team', {
+            message: 'Processing raid team data...'
+        });
+        
+        try {
+            // Get fresh guild member data and process for raid team
+            const { getAllActiveMembers } = await import('../../src/database.js');
+            const active_members = await getAllActiveMembers();
+            
+            const raid_team_result = await process_guild_data(active_members);
+            
+            emitProgress(io, processId, 'raid-team', {
+                message: `Processed ${raid_team_result.processed} members for raid team`,
+                success: true,
+                processed: raid_team_result.processed,
+                created: raid_team_result.created,
+                updated: raid_team_result.updated
+            });
+        } catch (error) {
+            emitProgress(io, processId, 'error', {
+                message: 'Error processing raid team data',
                 error: error.message
             });
         }

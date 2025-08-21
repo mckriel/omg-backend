@@ -30,6 +30,7 @@
     "gradient-string": "^3.0.0",
     "inquirer": "^12.1.0",
     "mongodb": "^6.3.0",
+    "mongoose": "^8.17.2",
     "next": "13.5.2",
     "node-cron": "^3.0.3",
     "ora": "^8.1.1",
