@@ -8,6 +8,7 @@
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
     "fetchGuild": "node ./tools/guildFetcher/fetchGuild.mjs",
+    "processRaidTeam": "node ./tools/scripts/processRaidTeam.mjs",
     "wipeMongo": "node ./tools/scripts/wipeMongoDB.mjs",
     "trackCharacterStats": "node ./tools/scripts/trackCharacterStats.mjs",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx}\"",

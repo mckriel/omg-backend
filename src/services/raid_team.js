@@ -126,6 +126,8 @@ export async function process_guild_data(guild_members) {
       throw new Error('Invalid guild members data provided');
     }
 
+    console.log(`📊 Starting raid team processing with ${guild_members.length} guild members from members collection`);
+
     let processed_count = 0;
     let updated_count = 0;
     let created_count = 0;
