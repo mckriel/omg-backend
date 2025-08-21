@@ -141,9 +141,15 @@ export async function process_guild_data(guild_members) {
       try {
         const min_ilvl = parseInt(process.env.RAID_TEAM_ILVL) || 690;
         const character_ilvl = character.itemlevel?.equiped || 0;
+        const guild_rank = character.guildData?.rank;
         
         if (character_ilvl < min_ilvl) {
           console.log(`⏭️  Skipping ${character.name}-${character.server}: ilvl ${character_ilvl} < ${min_ilvl}`);
+          continue;
+        }
+        
+        if (guild_rank > 6) {
+          console.log(`⏭️  Skipping ${character.name}-${character.server}: guild rank ${guild_rank} > 6`);
           continue;
         }
 
