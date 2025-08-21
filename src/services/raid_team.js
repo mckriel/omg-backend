@@ -143,12 +143,17 @@ export async function process_guild_data(guild_members) {
 
         if (result.upsertedCount > 0) {
           created_count++;
+          console.log(`✅ Created raid team record: ${character.name}-${character.server} (Ready: ${raid_team_data.raid_ready})`);
         } else if (result.modifiedCount > 0) {
           updated_count++;
+          console.log(`🔄 Updated raid team record: ${character.name}-${character.server} (Ready: ${raid_team_data.raid_ready})`);
+        } else {
+          console.log(`⚪ No changes for raid team record: ${character.name}-${character.server} (Ready: ${raid_team_data.raid_ready})`);
         }
 
         processed_count++;
       } catch (error) {
+        console.log(`❌ Failed to process raid team record: ${character.name}-${character.server} - ${error.message}`);
         errors.push({
           character: `${character.name}-${character.server}`,
           error: error.message
