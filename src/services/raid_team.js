@@ -129,6 +129,9 @@ export async function process_guild_data(guild_members) {
 
     console.log(`📊 Starting raid team processing with ${guild_members.length} guild members from members collection`);
 
+    await raid_team_member.deleteMany({});
+    console.log(`🗑️ Cleared raid-team collection`);
+
     let processed_count = 0;
     let updated_count = 0;
     let created_count = 0;
@@ -146,21 +149,10 @@ export async function process_guild_data(guild_members) {
 
         const raid_team_data = transform_character_for_raid_team(character);
         
-        const result = await raid_team_member.updateOne(
-          { name: character.name, server: character.server },
-          { $set: raid_team_data },
-          { upsert: true }
-        );
-
-        if (result.upsertedCount > 0) {
-          created_count++;
-          console.log(`✅ Created raid team record: ${character.name}-${character.server} (Ready: ${raid_team_data.raid_ready})`);
-        } else if (result.modifiedCount > 0) {
-          updated_count++;
-          console.log(`🔄 Updated raid team record: ${character.name}-${character.server} (Ready: ${raid_team_data.raid_ready})`);
-        } else {
-          console.log(`⚪ No changes for raid team record: ${character.name}-${character.server} (Ready: ${raid_team_data.raid_ready})`);
-        }
+        await raid_team_member.create(raid_team_data);
+        created_count++;
+        console.log(`✅ Created raid team record: ${character.name}-${character.server} (Ready: ${raid_team_data.raid_ready})`);
+      
 
         processed_count++;
       } catch (error) {
@@ -172,25 +164,9 @@ export async function process_guild_data(guild_members) {
       }
     }
 
-    const current_names = guild_members.map(char => char.name);
-    const inactive_result = await raid_team_member.updateMany(
-      { 
-        is_active: true, 
-        name: { $nin: current_names } 
-      },
-      { 
-        $set: { 
-          is_active: false, 
-          last_updated: new Date() 
-        } 
-      }
-    );
-
     console.log(`✅ Raid team processing complete:`, {
       processed: processed_count,
       created: created_count,
-      updated: updated_count,
-      deactivated: inactive_result.modifiedCount,
       errors: errors.length
     });
 
@@ -198,8 +174,8 @@ export async function process_guild_data(guild_members) {
       success: true,
       processed: processed_count,
       created: created_count,
-      updated: updated_count,
-      deactivated: inactive_result.modifiedCount,
+      updated: 0,
+      deactivated: 0,
       errors: errors
     };
 
