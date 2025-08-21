@@ -36,7 +36,7 @@ function calculate_raid_ready(character) {
     item.type === 'CLOAK' || item.type === 'BACK'
   );
   
-  const has_reshi_wraps = cloak_item?.name?.toLowerCase() === "reshi wraps";
+  const has_reshi_wraps = cloak_item?.name?.toLowerCase() === "reshii wraps";
   
   if (!has_reshi_wraps) {
     return false;
@@ -80,7 +80,7 @@ function transform_character_for_raid_team(character) {
   const cloak_item = character.equipement?.find(item => 
     item.type === 'CLOAK' || item.type === 'BACK'
   );
-  const missing_cloak = !(cloak_item?.name?.toLowerCase() === "reshi wraps");
+  const missing_cloak = !(cloak_item?.name?.toLowerCase() === "reshii wraps");
 
   const tanks = ["Blood", "Vengeance", "Guardian", "Brewmaster", "Protection"];
   const healers = ["Preservation", "Mistweaver", "Holy", "Discipline", "Restoration"];
