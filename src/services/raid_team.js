@@ -108,6 +108,7 @@ function transform_character_for_raid_team(character) {
     },
     has_tier_set: season3_tier_count >= 4,
     jewelry: jewelry_summary,
+    lockout_status: character.lockStatus || {},
     meta_data: {
       class: character.metaData?.class,
       spec: character.metaData?.spec,

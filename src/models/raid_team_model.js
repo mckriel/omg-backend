@@ -15,6 +15,7 @@ const raid_team_member_model = new mongoose.Schema({
   tier_sets: { type: Object, default: {} },
   has_tier_set: { type: Boolean, default: false },
   jewelry: { type: Object, default: {} },
+  lockout_status: { type: Object, default: {} },
   meta_data: { type: Object, required: true },
   media: { type: Object, default: {} },
   is_active: { type: Boolean, default: true },
